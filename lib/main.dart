@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:lottie/lottie.dart';
 
 void main() {
   runApp(MyApp());
@@ -43,21 +43,24 @@ class _MyHomePageState extends State<MyHomePage> {
   var humidity;
   var currently;
   var windSpeed;
+  var name;
   var url = Uri.parse(
       "http://api.openweathermap.org/data/2.5/weather?q=hanoi,vn&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24");
   Future getWeather() async {
-    http.Response response = await http.get(url);
-    
-    var result = jsonDecode(response.body);
-    print("code ne" + result['main']['temp']);
+    // http.Response response = await http.get(url);
+
+    // var result = jsonDecode(response.body);
+    Response response = await Dio().get(
+        "http://api.openweathermap.org/data/2.5/weather?q=hanoi,vn&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24&units=metric&lang=vi");
+    var result = response.data;
     setState(() {
       this.temp = result['main']['temp'];
+      this.currently = result['weather'][0]['main'];
       this.description = result['weather'][0]['description'];
-      this.description = result['weather'][0]['description'];
-      this.currently = result['weather']['humidity'];
-      this.windSpeed = result['weather']['speed'];
+      this.humidity = result['main']['humidity'];
+      this.windSpeed = result['wind']['speed'];
+      this.name = result['name'];
     });
-
   }
 
   @override
@@ -67,6 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget build(BuildContext context) {
+    // final cloudy = new FlareActor("assets/animated/cloudy.flr", alignment:Alignment.center, fit:BoxFit.contain, animation:"idle");
     return Scaffold(
       body: Column(
         children: <Widget>[
@@ -81,22 +85,26 @@ class _MyHomePageState extends State<MyHomePage> {
                   Padding(
                     padding: EdgeInsets.only(bottom: 30.0),
                     child: Text(
-                      "Hà nội",
+                      name,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 14.0,
                           fontWeight: FontWeight.w600),
                     ),
                   ),
-                  Text(temp != null ? temp + "\u00B0" : "30 \u00B0",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 40.0,
-                          fontWeight: FontWeight.w600)),
+                  // Text(temp != null ? temp.toString() +  "\u00B0" : "30 \u00B0",
+                  //     style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 40.0,
+                  //         fontWeight: FontWeight.w600)),
+                  //
+                  SizedBox(child: Lottie.asset('assets/animated/sun-rainy.json', width: 80, height: 80)),
+                
+                  
                   Padding(
                     padding: EdgeInsets.only(top: 10.0),
                     child: Text(
-                      "Nhiều mây",
+                      currently != null ? currently : "loading",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 14.0,
@@ -113,22 +121,25 @@ class _MyHomePageState extends State<MyHomePage> {
                 ListTile(
                   leading: FaIcon(FontAwesomeIcons.thermometerHalf),
                   title: Text("Nhiệt độ"),
-                  trailing: Text("30 \u00B0"),
+                  trailing: Text(
+                      temp != null ? temp.toString() + "\u00B0" : "loading"),
                 ),
                 ListTile(
                   leading: FaIcon(FontAwesomeIcons.cloud),
                   title: Text("Thời tiết"),
-                  trailing: Text("Nắng"),
+                  trailing: Text(description != null ? description : "loading"),
                 ),
                 ListTile(
                   leading: FaIcon(FontAwesomeIcons.sun),
                   title: Text("Độ ẩm"),
-                  trailing: Text("12"),
+                  trailing:
+                      Text(humidity != null ? humidity.toString() : "loading"),
                 ),
                 ListTile(
                   leading: FaIcon(FontAwesomeIcons.wind),
                   title: Text("Tốc độ gió"),
-                  trailing: Text("14"),
+                  trailing: Text(
+                      windSpeed != null ? windSpeed.toString() : "loading"),
                 )
               ],
             ),
