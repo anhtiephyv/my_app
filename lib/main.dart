@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:lottie/lottie.dart';
+import 'package:my_app/weather.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'App thời tiết',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -44,23 +45,42 @@ class _MyHomePageState extends State<MyHomePage> {
   var currently;
   var windSpeed;
   var name;
+  var weatherIcon;
+  var rootassets = 'assets/animated/';
+  //
   var url = Uri.parse(
       "http://api.openweathermap.org/data/2.5/weather?q=hanoi,vn&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24");
   Future getWeather() async {
-    // http.Response response = await http.get(url);
-
-    // var result = jsonDecode(response.body);
     Response response = await Dio().get(
         "http://api.openweathermap.org/data/2.5/weather?q=hanoi,vn&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24&units=metric&lang=vi");
     var result = response.data;
-    setState(() {
-      this.temp = result['main']['temp'];
-      this.currently = result['weather'][0]['main'];
-      this.description = result['weather'][0]['description'];
-      this.humidity = result['main']['humidity'];
-      this.windSpeed = result['wind']['speed'];
-      this.name = result['name'];
-    });
+
+    var _weather = await getWeatherIcon(result['weather'][0]['main']);
+    var _weatherIcon;
+    if (_weather != null) {
+      if (DateTime.now().hour > 18 && DateTime.now().hour < 6) {
+        _weatherIcon = rootassets + _weather.nightJsonName;
+      } else {
+        _weatherIcon = rootassets + _weather.dayJsonName;
+      }
+      setState(() {
+        this.temp = result['main']['temp'];
+        this.currently = result['weather'][0]['main'];
+        this.description = _weather.description;
+        this.humidity = result['main']['humidity'];
+        this.windSpeed = result['wind']['speed'];
+        this.name = result['name'];
+        this.weatherIcon = _weatherIcon;
+      });
+    }
+  }
+
+  Future<WeatherModel> getWeatherIcon(dynamic main) async {
+    WeatherModel currentData = weaththerData.where((e) => e.main == main).first;
+    if (currentData != null) {
+      return currentData;
+    }
+    return null;
   }
 
   @override
@@ -85,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Padding(
                     padding: EdgeInsets.only(bottom: 30.0),
                     child: Text(
-                      name,
+                      name != null ? name : "loading",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 14.0,
@@ -98,13 +118,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   //         fontSize: 40.0,
                   //         fontWeight: FontWeight.w600)),
                   //
-                  SizedBox(child: Lottie.asset('assets/animated/sun-rainy.json', width: 80, height: 80)),
-                
-                  
+                  SizedBox(
+                      child:
+                          Lottie.asset(weatherIcon, width: 100, height: 100)),
+
                   Padding(
                     padding: EdgeInsets.only(top: 10.0),
                     child: Text(
-                      currently != null ? currently : "loading",
+                      description != null ? description : "loading",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 14.0,
@@ -119,27 +140,30 @@ class _MyHomePageState extends State<MyHomePage> {
             child: ListView(
               children: <Widget>[
                 ListTile(
-                  leading: FaIcon(FontAwesomeIcons.thermometerHalf),
+                  leading: Lottie.asset('assets/icon/temperature.json',
+                      width: 40, height: 40),
                   title: Text("Nhiệt độ"),
                   trailing: Text(
                       temp != null ? temp.toString() + "\u00B0" : "loading"),
                 ),
+                // ListTile(
+                //   leading: FaIcon(FontAwesomeIcons.cloud),
+                //   title: Text("Thời tiết"),
+                //   trailing: Text(description != null ? description : "loading"),
+                // ),
                 ListTile(
-                  leading: FaIcon(FontAwesomeIcons.cloud),
-                  title: Text("Thời tiết"),
-                  trailing: Text(description != null ? description : "loading"),
-                ),
-                ListTile(
-                  leading: FaIcon(FontAwesomeIcons.sun),
+                  leading: Lottie.asset('assets/icon/humidity.json',
+                      width: 40, height: 40),
                   title: Text("Độ ẩm"),
-                  trailing:
-                      Text(humidity != null ? humidity.toString() : "loading"),
+                  trailing: Text(
+                      humidity != null ? humidity.toString() + '%' : "loading"),
                 ),
                 ListTile(
-                  leading: FaIcon(FontAwesomeIcons.wind),
+                  leading: Lottie.asset('assets/icon/wind.json',
+                      width: 40, height: 40),
                   title: Text("Tốc độ gió"),
                   trailing: Text(
-                      windSpeed != null ? windSpeed.toString() : "loading"),
+                      windSpeed != null ? windSpeed.toString() + " m/s": "loading"),
                 )
               ],
             ),

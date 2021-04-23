@@ -50,10 +50,27 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/animated/cloudy.flr
-    - assets/static/cloudy-day-1.svg
-    - assets/animated/lottie-sunny.json
-    - assets/animated/sun-rainy.json
+    - assets/animated/
+    - assets/icon/
+    # - assets/animated/day-sun-cloudy-heavy.json
+    # - assets/animated/day-light-rain.json
+    # - assets/animated/day-snow.json
+    # - assets/animated/day-sun-cloudy-heavy.json
+    # - assets/animated/day-sun-cloudy-light.json
+    # - assets/animated/day-sunny.json
+    # - assets/animated/day-thunder-rain.json
+    # - assets/animated/night-clear-sky.json
+    # - assets/animated/night-few-clouds.json
+    # - assets/animated/night-heavy-rain.json
+    # - assets/animated/night-light-rains.json
+    # - assets/animated/night-many-clouds.json
+    # - assets/animated/night-no-moon.json
+    # - assets/animated/night-snow.json
+    # - assets/animated/night-thunderstorm.json
+    # - assets/icon/temperature.json
+    # - assets/icon/humidity.json
+    # - assets/icon/wind.json
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
