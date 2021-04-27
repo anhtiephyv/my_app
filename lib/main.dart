@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:lottie/lottie.dart';
-import 'package:my_app/weather.dart';
+import 'package:my_app/data/city.dart';
+import 'package:my_app/data/weather.dart';
 
 void main() {
   runApp(MyApp());
@@ -47,12 +48,22 @@ class _MyHomePageState extends State<MyHomePage> {
   var name;
   var weatherIcon;
   var rootassets = 'assets/animated/';
+  var isLoading = false;
+  CityModel currentCity = cityData[0];
   //
-  var url = Uri.parse(
-      "http://api.openweathermap.org/data/2.5/weather?q=hanoi,vn&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24");
   Future getWeather() async {
+            //   print("http://api.openweathermap.org/data/2.5/weather?lat=" +
+            // currentCity.lat +
+            // "&lon=" +
+            // currentCity.lon +
+            // "&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24&units=metric&lang=vi");
     Response response = await Dio().get(
-        "http://api.openweathermap.org/data/2.5/weather?q=hanoi,vn&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24&units=metric&lang=vi");
+
+        "http://api.openweathermap.org/data/2.5/weather?lat=" +
+            currentCity.lat +
+            "&lon=" +
+            currentCity.lon +
+            "&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24&units=metric&lang=vi");
     var result = response.data;
 
     var _weather = await getWeatherIcon(result['weather'][0]['main']);
@@ -83,6 +94,91 @@ class _MyHomePageState extends State<MyHomePage> {
     return null;
   }
 
+  Widget _buildContent(contetxt, index) {
+    currentCity = cityData[index];
+    this.getWeather();
+    return Column(
+      children: <Widget>[
+        Container(
+            height: MediaQuery.of(context).size.height / 3,
+            width: MediaQuery.of(context).size.width,
+            color: Colors.blue,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(bottom: 30.0),
+                  child: Text(
+                    cityData[index].name != null
+                        ? cityData[index].name
+                        : "loading",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+                // Text(temp != null ? temp.toString() +  "\u00B0" : "30 \u00B0",
+                //     style: TextStyle(
+                //         color: Colors.white,
+                //         fontSize: 40.0,
+                //         fontWeight: FontWeight.w600)),
+                //
+                SizedBox(
+                    child: Lottie.asset(weatherIcon, width: 100, height: 100)),
+
+                Padding(
+                  padding: EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    description != null ? description : "loading",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            )),
+        Expanded(
+            child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: ListView(
+            children: <Widget>[
+              ListTile(
+                leading: Lottie.asset('assets/icon/temperature.json',
+                    width: 40, height: 40),
+                title: Text("Nhiệt độ"),
+                trailing:
+                    Text(temp != null ? temp.toString() + "\u00B0" : "loading"),
+              ),
+              // ListTile(
+              //   leading: FaIcon(FontAwesomeIcons.cloud),
+              //   title: Text("Thời tiết"),
+              //   trailing: Text(description != null ? description : "loading"),
+              // ),
+              ListTile(
+                leading: Lottie.asset('assets/icon/humidity.json',
+                    width: 40, height: 40),
+                title: Text("Độ ẩm"),
+                trailing: Text(
+                    humidity != null ? humidity.toString() + '%' : "loading"),
+              ),
+              ListTile(
+                leading: Lottie.asset('assets/icon/wind.json',
+                    width: 40, height: 40),
+                title: Text("Tốc độ gió"),
+                trailing: Text(windSpeed != null
+                    ? windSpeed.toString() + " m/s"
+                    : "loading"),
+              )
+            ],
+          ),
+        ))
+      ],
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -92,84 +188,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     // final cloudy = new FlareActor("assets/animated/cloudy.flr", alignment:Alignment.center, fit:BoxFit.contain, animation:"idle");
     return Scaffold(
-      body: Column(
-        children: <Widget>[
-          Container(
-              height: MediaQuery.of(context).size.height / 3,
-              width: MediaQuery.of(context).size.width,
-              color: Colors.blue,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 30.0),
-                    child: Text(
-                      name != null ? name : "loading",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  // Text(temp != null ? temp.toString() +  "\u00B0" : "30 \u00B0",
-                  //     style: TextStyle(
-                  //         color: Colors.white,
-                  //         fontSize: 40.0,
-                  //         fontWeight: FontWeight.w600)),
-                  //
-                  SizedBox(
-                      child:
-                          Lottie.asset(weatherIcon, width: 100, height: 100)),
-
-                  Padding(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: Text(
-                      description != null ? description : "loading",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              )),
-          Expanded(
-              child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: ListView(
-              children: <Widget>[
-                ListTile(
-                  leading: Lottie.asset('assets/icon/temperature.json',
-                      width: 40, height: 40),
-                  title: Text("Nhiệt độ"),
-                  trailing: Text(
-                      temp != null ? temp.toString() + "\u00B0" : "loading"),
-                ),
-                // ListTile(
-                //   leading: FaIcon(FontAwesomeIcons.cloud),
-                //   title: Text("Thời tiết"),
-                //   trailing: Text(description != null ? description : "loading"),
-                // ),
-                ListTile(
-                  leading: Lottie.asset('assets/icon/humidity.json',
-                      width: 40, height: 40),
-                  title: Text("Độ ẩm"),
-                  trailing: Text(
-                      humidity != null ? humidity.toString() + '%' : "loading"),
-                ),
-                ListTile(
-                  leading: Lottie.asset('assets/icon/wind.json',
-                      width: 40, height: 40),
-                  title: Text("Tốc độ gió"),
-                  trailing: Text(
-                      windSpeed != null ? windSpeed.toString() + " m/s": "loading"),
-                )
-              ],
-            ),
-          ))
-        ],
-      ),
-    );
+        body: PageView.builder(
+            itemCount: cityData.length,
+            controller: PageController(keepPage: true),
+            itemBuilder: (context, index) => _buildContent(context, index)));
   }
 }
