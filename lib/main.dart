@@ -49,41 +49,89 @@ class _MyHomePageState extends State<MyHomePage> {
   var weatherIcon;
   var rootassets = 'assets/animated/';
   var isLoading = false;
+  //var count = 1;
   CityModel currentCity = cityData[0];
   //
   Future getWeather() async {
-            //   print("http://api.openweathermap.org/data/2.5/weather?lat=" +
-            // currentCity.lat +
-            // "&lon=" +
-            // currentCity.lon +
-            // "&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24&units=metric&lang=vi");
-    Response response = await Dio().get(
 
-        "http://api.openweathermap.org/data/2.5/weather?lat=" +
-            currentCity.lat +
-            "&lon=" +
-            currentCity.lon +
-            "&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24&units=metric&lang=vi");
-    var result = response.data;
+      // setState(() {
+      //   this.isLoading = true;
+      // });
+      //   print("http://api.openweathermap.org/data/2.5/weather?lat=" +
+      // currentCity.lat +
+      // "&lon=" +
+      // currentCity.lon +
+      // "&APPID=ff00f06590bf72e3ee0dba8ff1e0ef24&units=metric&lang=vi");
+      var url = "http://api.openweathermap.org/data/2.5/weather?lat=" +
+          currentCity.lat +
+          "&lon=" +
+          currentCity.lon +
+          "&APPID=" +
+          myApiKey +
+          "&units=metric&lang=vi";
+       Response response = await Dio().get(url);
+      // print('đã chạy qua đây');
+      var result = response.data;
+      // dynamic result = {
+      //   "coord": {"lon": 105.8342, "lat": 21.0278},
+      //   "weather": [
+      //     {
+      //       "id": 804,
+      //       "main": "Clouds",
+      //       "description": "mây đen u ám",
+      //       "icon": "04d"
+      //     }
+      //   ],
+      //   "base": "stations",
+      //   "main": {
+      //     "temp": 22.99,
+      //     "feels_like": 23.33,
+      //     "temp_min": 22.99,
+      //     "temp_max": 22.99,
+      //     "pressure": 1011,
+      //     "humidity": 76,
+      //     "sea_level": 1011,
+      //     "grnd_level": 1009
+      //   },
+      //   "visibility": 10000,
+      //   "wind": {"speed": 1.86, "deg": 21, "gust": 3.05},
+      //   "clouds": {"all": 100},
+      //   "dt": 1621909971,
+      //   "sys": {
+      //     "type": 1,
+      //     "id": 9308,
+      //     "country": "VN",
+      //     "sunrise": 1621894564,
+      //     "sunset": 1621942286
+      //   },
+      //   "timezone": 25200,
+      //   "id": 1581130,
+      //   "name": "Hà Nội",
+      //   "cod": 200
+      // };
 
-    var _weather = await getWeatherIcon(result['weather'][0]['main']);
-    var _weatherIcon;
-    if (_weather != null) {
-      if (DateTime.now().hour > 18 && DateTime.now().hour < 6) {
-        _weatherIcon = rootassets + _weather.nightJsonName;
-      } else {
-        _weatherIcon = rootassets + _weather.dayJsonName;
+      var _weather = await getWeatherIcon(result['weather'][0]['main']);
+      var _weatherIcon;
+      if (_weather != null) {
+        if (DateTime.now().hour > 18 && DateTime.now().hour < 6) {
+          _weatherIcon = rootassets + _weather.nightJsonName;
+        } else {
+          _weatherIcon = rootassets + _weather.dayJsonName;
+        }
+   
+        setState(() {
+           //    this.count++;
+          this.temp = result['main']['temp'] ;
+          this.currently = result['weather'][0]['main'];
+          this.description = _weather.description;
+          this.humidity = result['main']['humidity'];
+          this.windSpeed = result['wind']['speed'];
+          this.name = result['name'];
+          this.weatherIcon = _weatherIcon;
+          this.isLoading = false;
+        });
       }
-      setState(() {
-        this.temp = result['main']['temp'];
-        this.currently = result['weather'][0]['main'];
-        this.description = _weather.description;
-        this.humidity = result['main']['humidity'];
-        this.windSpeed = result['wind']['speed'];
-        this.name = result['name'];
-        this.weatherIcon = _weatherIcon;
-      });
-    }
+    
   }
 
   Future<WeatherModel> getWeatherIcon(dynamic main) async {
@@ -95,8 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildContent(contetxt, index) {
-    currentCity = cityData[index];
-    this.getWeather();
+  
     return Column(
       children: <Widget>[
         Container(
@@ -181,8 +228,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    super.initState();
     this.getWeather();
+    super.initState();
   }
 
   Widget build(BuildContext context) {
@@ -191,6 +238,10 @@ class _MyHomePageState extends State<MyHomePage> {
         body: PageView.builder(
             itemCount: cityData.length,
             controller: PageController(keepPage: true),
+            onPageChanged: (page) {
+             currentCity = cityData[page];
+             this.getWeather();
+            },
             itemBuilder: (context, index) => _buildContent(context, index)));
   }
 }
